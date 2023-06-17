@@ -3,12 +3,21 @@ from datetime import datetime
 import time
 
 import pandas as pd
+
 import yaml
 from bson import ObjectId
 from pymongo import MongoClient
+from dotenv import load_dotenv
+
+load_dotenv(verbose=True)
+
+# dotenv_path = join(dirname(__file__), './config/.env')
+load_dotenv('./src/config/.env')
+
+env_type = os.environ.get("ENV_TYPE")
 
 
-with open("settings.yml", "r") as yml:
+with open("./src/config/settings.yml", "r") as yml:
     settings = yaml.load(yml, Loader=yaml.SafeLoader)
 
 env_type = os.environ.get("ENV_TYPE")
@@ -32,12 +41,33 @@ else:
     )
     client = MongoClient(client_str)
 
-result = client.S2M.students.find()
-for doc in result:
-    print(doc)
+students_result = client.S2M.students.find()
+course_enrollments_result = client.S2M.course_enrollments.find()
+courses_result = client.S2M.courses.find()
+orders_result = client.S2M.orders.find()
+products_result = client.S2M.products.find()
+questionnaire_answers_result = client.S2M.questionnaire_answers.find()
+questionnaires_result = client.S2M.questionnaires.find()
 
-user_data = pd.DataFrame()
-print(user_data.head(5))
+students_result = pd.json_normalize(students_result)
+course_enrollments_result = pd.json_normalize(course_enrollments_result)
+courses_result = pd.json_normalize(courses_result)
+orders_result = pd.json_normalize(orders_result)
+products_result = pd.json_normalize(products_result)
+questionnaire_answers_result = pd.json_normalize(questionnaire_answers_result)
+questionnaires_result = pd.json_normalize(questionnaires_result)
+
+
+
+students_result.to_csv("./output/students.csv", index = False)
+course_enrollments_result.to_csv("./output/course_enrollments.csv", index = False)
+courses_result.to_csv("./output/courses.csv", index = False)
+orders_result.to_csv("./output/orders.csv", index = False)
+products_result.to_csv("./output/products.csv", index = False)
+questionnaire_answers_result.to_csv("./output/questionnaire_answers.csv", index = False)
+questionnaires_result.to_csv("./output/questionnaires.csv", index = False)
+
+
 
 # df_student_merged = pd.read_csv(
 #     "./migration/source_tmp/student_merged.csv",
